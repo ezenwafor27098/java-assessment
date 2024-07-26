@@ -17,7 +17,7 @@ services:
 
   authorization-service:
     build:
-      context: ./authorization-service
+      context: ./authentication
     ports:
       - "8081:8080"
     depends_on:
