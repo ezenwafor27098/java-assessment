@@ -5,6 +5,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +22,7 @@ import com.chargepoint.transaction.model.TransactionRequest;
 public class TransactionController {
     
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(TransactionController.class);
     private CompletableFuture<AuthenticationResponse> authenticationFuture;
 
     public TransactionController(KafkaTemplate<String, Object> kafkaTemplate) {
@@ -28,6 +31,8 @@ public class TransactionController {
 
     @PostMapping("/authorize")
     public String processTransaction(@RequestBody TransactionRequest request) {
+        logger.info("This is the input ==================================================>");
+        logger.info(request.toString());
         authenticationFuture = new CompletableFuture<>();
         kafkaTemplate.send("authentication_requests", request);
 

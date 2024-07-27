@@ -3,6 +3,8 @@ package com.chargepoint.authentication.listener;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,9 @@ import com.chargepoint.authentication.model.StatusEnum;
 public class AuthenticationListener {
     
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationListener.class);
     private final List<String> validIDs;
+
     public AuthenticationListener(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
         this.validIDs = Arrays.asList(
@@ -34,6 +38,8 @@ public class AuthenticationListener {
 
     @KafkaListener(topics = "authentication_requests", groupId = "auth_group")
     public void handleAuthenticationRequest(AuthenticationRequest request) {
+        logger.info("This is the sample request =========================================================>");
+        logger.info(request.toString());
         String status;
         if (validIDs.contains(request.getDriverIdentifier().getId())) {
             status = StatusEnum.Accepted.name();
