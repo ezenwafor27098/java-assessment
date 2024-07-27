@@ -32,7 +32,7 @@ public class TransactionController {
     @PostMapping("/authorize")
     public String processTransaction(@RequestBody TransactionRequest request) {
         logger.info("This is the input ==================================================>");
-        logger.info(request.toString());
+        if (request != null) logger.info(request.getStationUuid()+", "+request.getDriverIdentifier().getId());
         authenticationFuture = new CompletableFuture<>();
         kafkaTemplate.send("authentication_requests", request);
 

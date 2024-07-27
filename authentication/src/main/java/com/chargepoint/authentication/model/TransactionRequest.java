@@ -1,6 +1,6 @@
 package com.chargepoint.authentication.model;
 
-public class AuthenticationRequest {
+public class TransactionRequest {
     private String stationUuid;
     private DriverIdentifier driverIdentifier;
 

@@ -9,9 +9,9 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import com.chargepoint.authentication.model.AuthenticationRequest;
 import com.chargepoint.authentication.model.AuthenticationResponse;
 import com.chargepoint.authentication.model.StatusEnum;
+import com.chargepoint.authentication.model.TransactionRequest;
 
 @Service
 public class AuthenticationListener {
@@ -37,9 +37,9 @@ public class AuthenticationListener {
     }
 
     @KafkaListener(topics = "authentication_requests", groupId = "auth_group")
-    public void handleAuthenticationRequest(AuthenticationRequest request) {
+    public void handleAuthenticationRequest(TransactionRequest request) {
         logger.info("This is the sample request =========================================================>");
-        logger.info(request.toString());
+        logger.info(request.getStationUuid()+", "+request.getDriverIdentifier().getId());
         String status;
         if (validIDs.contains(request.getDriverIdentifier().getId())) {
             status = StatusEnum.Accepted.name();

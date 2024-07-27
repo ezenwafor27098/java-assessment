@@ -4,6 +4,8 @@ public class AuthenticationResponse {
     private String stationUuid;
     private String authenticationStatus;
 
+    public AuthenticationResponse() {}
+
     public AuthenticationResponse(String stationUuid, String authenticationStatus) {
         this.stationUuid = stationUuid;
         this.authenticationStatus = authenticationStatus;
