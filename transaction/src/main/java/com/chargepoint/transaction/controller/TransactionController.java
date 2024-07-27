@@ -26,7 +26,7 @@ public class TransactionController {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    @PostMapping
+    @PostMapping("/authorize")
     public String processTransaction(@RequestBody TransactionRequest request) {
         authenticationFuture = new CompletableFuture<>();
         kafkaTemplate.send("authentication_requests", request);
