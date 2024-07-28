@@ -1,22 +1,23 @@
 package com.chargepoint.transaction.model;
 
 public class AuthenticationResponse {
-    private String stationUuid;
+    
+    private String requestUuid;
     private String authenticationStatus;
 
     public AuthenticationResponse() {}
 
-    public AuthenticationResponse(String stationUuid, String authenticationStatus) {
-        this.stationUuid = stationUuid;
+    public AuthenticationResponse(String requestUuid, String authenticationStatus) {
+        this.requestUuid = requestUuid;
         this.authenticationStatus = authenticationStatus;
     }
 
-    public String getStationUuid() {
-        return stationUuid;
+    public String getRequestUuid() {
+        return requestUuid;
     }
 
-    public void setStationUuid(String stationUuid) {
-        this.stationUuid = stationUuid;
+    public void setRequestUuid(String requestUuid) {
+        this.requestUuid = requestUuid;
     }
 
     public String getAuthenticationStatus() {

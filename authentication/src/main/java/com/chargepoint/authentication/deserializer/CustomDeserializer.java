@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 
-import com.chargepoint.authentication.model.TransactionRequest;
+import com.chargepoint.authentication.model.AuthenticationRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CustomDeserializer<T> implements Deserializer<T> {
@@ -15,7 +15,7 @@ public class CustomDeserializer<T> implements Deserializer<T> {
 
     @SuppressWarnings("unchecked")
     public CustomDeserializer() {
-        this.clazz = (Class<T>) TransactionRequest.class;
+        this.clazz = (Class<T>) AuthenticationRequest.class;
         this.objectMapper = new ObjectMapper();
     }
 

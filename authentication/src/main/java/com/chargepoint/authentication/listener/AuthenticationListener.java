@@ -3,21 +3,18 @@ package com.chargepoint.authentication.listener;
 import java.util.Arrays;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.chargepoint.authentication.model.AuthenticationRequest;
 import com.chargepoint.authentication.model.AuthenticationResponse;
 import com.chargepoint.authentication.model.StatusEnum;
-import com.chargepoint.authentication.model.TransactionRequest;
 
 @Service
 public class AuthenticationListener {
     
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticationListener.class);
     private final List<String> validIDs;
 
     public AuthenticationListener(KafkaTemplate<String, Object> kafkaTemplate) {
@@ -37,16 +34,19 @@ public class AuthenticationListener {
     }
 
     @KafkaListener(topics = "authentication_requests", groupId = "auth_group")
-    public void handleAuthenticationRequest(TransactionRequest request) {
-        logger.info("This is the sample request =========================================================>");
-        logger.info(request.getStationUuid()+", "+request.getDriverIdentifier().getId());
+    public void handleAuthenticationRequest(AuthenticationRequest request) {
         String status;
-        if (validIDs.contains(request.getDriverIdentifier().getId())) {
-            status = StatusEnum.Accepted.name();
-        } else {
-            status = StatusEnum.Rejected.name();
+        try {
+            Integer.valueOf(request.getAuthenticationToken());
+            if (validIDs.contains(request.getAuthenticationToken())) {
+                status = StatusEnum.Accepted.name();
+            } else {
+                status = StatusEnum.Rejected.name();
+            }
+        } catch (NumberFormatException e) {
+            status = StatusEnum.Invalid.name();
         }
-        AuthenticationResponse response = new AuthenticationResponse(request.getStationUuid(), status);
+        AuthenticationResponse response = new AuthenticationResponse(request.getRequestUuid(), status);
         kafkaTemplate.send("authentication_responses", response);
     }
 
