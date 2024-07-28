@@ -43,18 +43,7 @@ public class TransactionController {
 
     @PostMapping("/authorize")
     public ResponseEntity<APIResponse> processTransaction(@Valid @RequestBody TransactionRequest request) {
-        authenticationFuture = new CompletableFuture<>();
-        AuthenticationRequest authenticationRequest = new AuthenticationRequest(
-            UUID.randomUUID().toString(), 
-            request.getDriverIdentifier().getId()
-        );
-        kafkaTemplate.send("authentication_requests", authenticationRequest);
-        try {
-            pollForAuthenticationResponse(authenticationFuture, authenticationRequest.getRequestUuid());
-            return authenticationFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
-            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new APIResponse(StatusEnum.Unknown.name()));
-        }
+        return transactionService(request);
     }
 
     @KafkaListener(topics = "authentication_responses", groupId = "transaction_group")
@@ -62,22 +51,34 @@ public class TransactionController {
         authenticationResponses.add(response);
     }
 
+    //Logic should be in the transactionService class, but since its a simple one, doing it here.
+    private ResponseEntity<APIResponse> transactionService(TransactionRequest request) {
+        try {
+            authenticationFuture = new CompletableFuture<>();
+            AuthenticationRequest authenticationRequest = new AuthenticationRequest(
+                UUID.randomUUID().toString(), 
+                request.getDriverIdentifier().getId()
+            );
+            kafkaTemplate.send("authentication_requests", authenticationRequest);
+            pollForAuthenticationResponse(authenticationFuture, authenticationRequest.getRequestUuid());
+            return authenticationFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new APIResponse(StatusEnum.Unknown.name()));
+        }
+    }
+
     private void pollForAuthenticationResponse(CompletableFuture<ResponseEntity<APIResponse>> future, String requestUuid) {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
             Optional<AuthenticationResponse> authResponse = authenticationResponses.stream().filter(a -> a.getRequestUuid().equalsIgnoreCase(requestUuid)).findAny();
             if (authResponse.isPresent()) {
                 AuthenticationResponse receivedResponse = authResponse.get();
-                if (receivedResponse.getAuthenticationStatus().equalsIgnoreCase(StatusEnum.Accepted.name())) {
+                if (receivedResponse.getAuthenticationStatus().equalsIgnoreCase(StatusEnum.Accepted.name()))
                     future.complete(ResponseEntity.ok(new APIResponse(authResponse.get().getAuthenticationStatus())));
-                } else future.complete(ResponseEntity.badRequest().body(new APIResponse(receivedResponse.getAuthenticationStatus())));
+                else future.complete(ResponseEntity.badRequest().body(new APIResponse(receivedResponse.getAuthenticationStatus())));
             }
         }, 0, 200, TimeUnit.MILLISECONDS);
-
-        // Set a timeout for the future
         Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-            if (!future.isDone()) {
-                future.complete(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body(new APIResponse(StatusEnum.Unknown.name())));
-            }
+            if (!future.isDone()) future.complete(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body(new APIResponse(StatusEnum.Unknown.name())));
         }, 5, TimeUnit.SECONDS); 
     }
 }
